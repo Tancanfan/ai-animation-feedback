@@ -1,0 +1,15 @@
+# Virtual environment (prevents large unecessary files)
+venv/
+
+# API keys (hides secrets)
+.env
+
+# Compiled Python files (not needed for tracking)
+__pycache__/
+
+# System-specific files (prevents OS junk files)
+.DS_store # Mac
+Thumbs.db # Windows
+
+# Log files (prevents unecessary logs from being pushed)
+*.log
