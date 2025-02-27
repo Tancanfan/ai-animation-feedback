@@ -3,6 +3,7 @@ venv/
 
 # API keys (hides secrets)
 .env
+backend/.env
 
 # Compiled Python files (not needed for tracking)
 __pycache__/
