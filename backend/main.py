@@ -6,7 +6,6 @@ import google.generativeai as genai
 
 dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".env"))
 load_dotenv(dotenv_path)
-print("Loaded API Key:", os.getenv("GOOGLE_API_KEY"))
 
 # Get the API key from the environment
 api_key = os.getenv("GOOGLE_API_KEY")
