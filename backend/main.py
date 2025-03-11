@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from backend.services.ai_feedback import get_animation_feedback
 import os
 from dotenv import load_dotenv
@@ -28,46 +28,27 @@ async def root():
 async def upload_animation(file: UploadFile = File(...)):
     return {"filename": file.filename, "message": "File received!"}
 
+
+
 @app.get("/feedback")
 async def feedback(animation_description: str):
-    ai_response = get_animation_feedback(animation_description)
-    return {"feedback": ai_response}
+    """
+    Fetch AI-generated animation feedback.
 
+    **Params:**
+    - `animation_description` (str): A brief text describing the animation.
 
-# from fastapi import FastAPI, UploadFile, File
-# from backend.services.ai_feedback import get_animation_feedback
-# import os
-# from dotenv import load_dotenv
+    **Returns:**
+    - JSON response containing the AI's feedback.
+    """
+    try:
+        ai_response = get_animation_feedback(animation_description)
 
+        # If the response is an error message, raise an HTTPException
+        if ai_response.startswith("⚠️ Error:"):
+            raise HTTPException(status_code=400, detail=ai_response)
 
-# # Explicitly set .env path
-# env_path = os.path.join(os.path.dirname(__file__), ".env")
-
-# # Load environment variables
-# if not load_dotenv(env_path):
-#     print("⚠️ WARNING: Could not load .env file!")
-
-# # Check API key
-# api_key = os.getenv("OPENAI_API_KEY")
-# if not api_key:
-#     print("❌ ERROR: OPENAI_API_KEY is still None!")
-# else:
-#     print("✅ Loaded API Key:", api_key)
-
-# print(get_animation_feedback("Test animation"))
-
-
-# app = FastAPI()
-
-# @app.post("/")
-# async def root():
-#     return {"message": "AI Animation Feedback API is running!"}
-
-# @app.post("/upload")
-# async def upload_animation(file: UploadFile = File(...)):
-#     return {"filename": file.filename, "message": "File received!"}
-
-# @app.get("/feedback")
-# async def feedback(animation_description: str):
-#     ai_response = get_animation_feedback(animation_description)
-#     return {"feedback": ai_response}
+        return {"feedback": ai_response}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"⚠️ Server error: {str(e)}")

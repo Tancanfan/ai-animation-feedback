@@ -1,44 +1,40 @@
-import os
-from dotenv import load_dotenv
-from openai import OpenAI
 import google.generativeai as genai
-
-
 
 def get_animation_feedback(animation_description: str):
     """
-    Sends an animation description to Gemini Pro and retrieves feedback.
+    Sends an animation description to Gemini and retrieves feedback.
+    
+    Params:
+    - animation_description (str): The description of the animation.
+
+    Returns:
+    - str: AI-generated feedback or an error message.
     """
-    model = genai.GenerativeModel("gemini-1.5-pro-latest")
+    try:
+        model = genai.GenerativeModel("gemini-1.5-pro-latest")
+        
+        # Ensure we actually got a valid input
+        if not animation_description.strip():
+            return "⚠️ Error: The animation description cannot be empty."
+
+        response = model.generate_content(
+            f"You are an expert animation critic. Provide detailed feedback on this animation: {animation_description}"
+        )
+        
+        # Ensure a valid response was received
+        if not response.text:
+            return "⚠️ Error: No response received from the AI model."
+        
+        return response.text
+
+    except genai.types.NotFoundError:
+        return "⚠️ Error: The specified AI model was not found. Check the model name."
     
-    response = model.generate_content(f"You are an expert animation critic. Provide detailed feedback on this animation: {animation_description}")
-
-    return response.text
-
-# def get_animation_feedback(animation_description: str):
-#     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-#     print("📌 Retrieving available models...")
+    except genai.types.PermissionDeniedError:
+        return "⚠️ Error: API access is denied. Check your API key and permissions."
     
-#     try:
-#         models = client.models.list()
-#         print("✅ Models retrieved:")
-#         for model in models:
-#             print("➡️", model.id)
-#     except Exception as e:
-#         print("❌ Error retrieving models:", str(e))
-#         return "Error: Unable to retrieve models."
+    except genai.types.ResourceExhaustedError:
+        return "⚠️ Error: You've exceeded your API quota. Try again later or check your plan."
 
-
-# def get_animation_feedback(animation_description: str):
-#     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-#     response = client.chat.completions.create(
-#         model="gpt-4o",
-#         messages=[
-#             {"role": "system", "content": "You are an expert animation critic."},
-#             {"role": "user", "content": f"Analyze this animation: {animation_description}"}
-#         ]
-#     )
-#     return response.choices[0].message["content"]
-
+    except Exception as e:
+        return f"⚠️ Unexpected error: {str(e)}"
