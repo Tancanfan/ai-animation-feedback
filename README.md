@@ -4,7 +4,7 @@ Get precise, structured animation feedback from Google's Gemini Pro on any video
 
 ---
 
-## 🔧 Features
+## Features
 
 - Upload animation videos directly via Postman or your frontend
 - Automatically sends videos to Gemini 2.5 Pro Experimental for critique
@@ -47,7 +47,7 @@ uvicorn backend.main:app --reload
 
 ## API Endpoints
 
-### ➕ `POST /upload?file=...`
+### `POST /upload?file=...`
 Upload a video file. Accepts `.mp4`, `.mov`, `.gif`, `.png`, and `.jpg`.
 
 - **Body (form-data):**
@@ -118,6 +118,6 @@ YouTube: [FrameCubed](https://www.youtube.com/@framecubed)
 
 ---
 
-## 📜 License
+## License
 
 MIT — use freely, remix bravely.
