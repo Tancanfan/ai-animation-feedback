@@ -14,3 +14,6 @@ Thumbs.db # Windows
 
 # Log files (prevents unecessary logs from being pushed)
 *.log
+
+# Uploads
+uploads/
