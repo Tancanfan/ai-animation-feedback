@@ -1,16 +1,19 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from backend.services.ai_feedback import get_animation_feedback
+from fastapi import FastAPI, UploadFile, File, Query
+from backend.services.analyze import analyze_video_with_gemini
+from backend.services.file_upload import save_uploaded_file
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
+
+
 
 dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".env"))
 load_dotenv(dotenv_path)
 
 # Get the API key from the environment
-api_key = os.getenv("GOOGLE_API_KEY")
+api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
-    raise ValueError("Google API key not found. Make sure it's set in the .env file.")
+    raise ValueError("Gemini API key not found. Make sure it's set in the .env file.")
 
 # Configure Gemini API with the key
 genai.configure(api_key=api_key)
@@ -25,30 +28,20 @@ async def root():
     return {"message": "AI Animation Feedback API is running with Gemini!"}
 
 @app.post("/upload")
-async def upload_animation(file: UploadFile = File(...)):
-    return {"filename": file.filename, "message": "File received!"}
-
-
+async def upload_video(file: UploadFile = File(...)):
+    file_path = await save_uploaded_file(file)  # Call helper function
+    if isinstance(file_path, dict): return file_path  # Return error message 
+    return {"message": "File uploaded successfully", 
+            "filename": file.filename, 
+            "saved_path": file_path}
 
 @app.get("/feedback")
-async def feedback(animation_description: str):
-    """
-    Fetch AI-generated animation feedback.
-
-    **Params:**
-    - `animation_description` (str): A brief text describing the animation.
-
-    **Returns:**
-    - JSON response containing the AI's feedback.
-    """
-    try:
-        ai_response = get_animation_feedback(animation_description)
-
-        # If the response is an error message, raise an HTTPException
-        if ai_response.startswith("⚠️ Error:"):
-            raise HTTPException(status_code=400, detail=ai_response)
-
-        return {"feedback": ai_response}
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"⚠️ Server error: {str(e)}")
+async def feedback(filename: str = Query(..., description="Name of the uploaded animation file")):
+    file_path = os.path.join("uploads", filename)
+    if not os.path.exists(file_path):
+        return {"error": f"File '{filename}' not found."}
+    feedback_response = analyze_video_with_gemini(file_path)
+    return {
+        "filename": filename, 
+        "feedback": feedback_response
+        }
